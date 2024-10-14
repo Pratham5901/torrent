@@ -1,0 +1,62 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torrent App</title>
+    <script src="https://cdn.jsdelivr.net/npm/webtorrent/webtorrent.min.js"></script>
+</head>
+<body>
+    <h1>Torrent File Sharing</h1>
+    <h2>Select Files to Seed</h2>
+    <input type="file" id="file-input" multiple>
+    <div id="message"></div>
+
+    <h2>Download Torrent</h2>
+    <input type="text" id="magnet-uri" placeholder="Enter Magnet URI">
+    <button id="download-torrent">Download Torrent</button>
+
+    <script>
+        const client = new WebTorrent(); // Initialize the WebTorrent client
+
+        document.getElementById('file-input').onchange = (event) => {
+            const files = Array.from(event.target.files);
+
+            if (files.length === 0) {
+                return;
+            }
+
+            // Automatically start seeding when files are selected
+            client.seed(files, { name: 'My Torrent Files' }, (torrent) => {
+                console.log(`Seeding started!`);
+                console.log(`Magnet URI: ${torrent.magnetURI}`);
+
+                // Display the magnet URI in the message section
+                document.getElementById('message').textContent = `Seeding! Magnet URI: ${torrent.magnetURI}`;
+            });
+        };
+
+        document.getElementById('download-torrent').onclick = () => {
+            const magnetURI = document.getElementById('magnet-uri').value;
+
+            client.add(magnetURI, (torrent) => {
+                console.log(`Downloading: ${torrent.infoHash}`);
+                
+                const file = torrent.files[0]; // Get the first file
+                file.getBlobURL((err, url) => {
+                    if (err) throw err;
+
+                    // Create a download link
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name; // Use the original file name
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torrent Creator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #file-input { margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Create a Torrent</h1>
+    <input type="file" id="file-input" multiple />
+    <button id="create-torrent">Create Torrent</button>
+    <p id="message"></p>
+    <script>
+        document.getElementById('create-torrent').onclick = async () => {
+            const input = document.getElementById('file-input');
+            const files = Array.from(input.files).map(file => file.name);
+
+            const response = await fetch('/create-torrent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files })
+            });
+
+            const result = await response.json();
+            document.getElementById('message').textContent = `Torrent created! Magnet URI: ${result.magnetURI}`;
+        };
+    </script>
+</body>
+</html>
